@@ -1,6 +1,7 @@
-import { getRepository } from 'typeorm'
+import { getRepository } from 'typeorm';
 import { compare } from 'bcryptjs';
 import { sign, verify } from 'jsonwebtoken';
+import authConfig from '../config/auth';
 
 import User from "../models/User";
 
@@ -24,7 +25,7 @@ class AuthenticateUserService {
       throw new Error(('Incorrect email/password combination.'));
     }
 
-    //user.password - É a senha criptografada
+    //user.password - É a senha descriptografada
     // password - Senha criptografada
 
     const passwordMatched = await compare(password, user.password);
@@ -33,9 +34,11 @@ class AuthenticateUserService {
       throw new Error(('Incorrect email/password combination.'));
     }
 
-    const token = sign({}, '0160b1e60edca359008f9f09e74e5391', {
+    const { secret, expiresIn } = authConfig.jwt
+
+    const token = sign({}, secret, {
       subject: user.id,
-      expiresIn: '1d'
+      expiresIn: expiresIn
     })
 
     //Se chegou até aqui, usuário autenticado
